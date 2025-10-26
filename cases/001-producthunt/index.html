@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N8N 案例解析教学 - ProductHunt 自动采集工作流</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .header .case-number {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .workflow-image {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .node-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .node-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .node-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .node-name {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .node-type {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-left: auto;
+        }
+
+        .node-content h4 {
+            color: #667eea;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .node-content ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .node-content li {
+            margin: 8px 0;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tip-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .tip-box strong {
+            color: #28a745;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .warning-box strong {
+            color: #856404;
+        }
+
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .use-case-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .use-case-item:hover {
+            transform: scale(1.05);
+        }
+
+        .use-case-item .emoji {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .section-title {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 N8N 案例解析教学</h1>
+            <div class="subtitle">ProductHunt 产品信息自动采集与归档工作流</div>
+            <div class="case-number">📚 案例 #001 | 日期: 2025-10-26</div>
+        </div>
+
+        <div class="content">
+            <!-- 工作流概览 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🎯</span>
+                    工作流概览
+                </h2>
+                <img src="https://placeholder.com/workflow-screenshot" alt="N8N工作流截图" class="workflow-image" style="display:none;">
+                <div class="card">
+                    <div class="card-title">工作流目的</div>
+                    <p>这是一个<strong>「ProductHunt 产品信息自动采集与归档」</strong>工作流，用于每天定时抓取 ProductHunt 上的最新产品信息，并保存为结构化的 CSV 文件。</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">工作流程</div>
+                    <ol style="margin-left: 20px;">
+                        <li><strong>触发：</strong>每天纽约时间早上 9:00 自动运行</li>
+                        <li><strong>采集：</strong>从 ProductHunt RSS 订阅获取最新产品列表</li>
+                        <li><strong>处理：</strong>通过代码节点清洗、筛选、格式化数据</li>
+                        <li><strong>转换：</strong>将处理后的数据转换为 CSV 格式</li>
+                        <li><strong>存储：</strong>保存到本地磁盘进行归档</li>
+                    </ol>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">典型应用场景</div>
+                    <div class="use-cases">
+                        <div class="use-case-item">
+                            <div class="emoji">🔍</div>
+                            <div>竞品监控</div>
+                        </div>
+                        <div class="use-case-item">
+                            <div class="emoji">📊</div>
+                            <div>趋势分析</div>
+                        </div>
+                        <div class="use-case-item">
+                            <div class="emoji">💡</div>
+                            <div>创意灵感库</div>
+                        </div>
+                        <div class="use-case-item">
+                            <div class="emoji">📈</div>
+                            <div>市场研究</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 节点详解 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🔧</span>
+                    节点详细解析
+                </h2>
+
+                <!-- 节点 1: Cron -->
+                <div class="node-card">
+                    <div class="node-header">
+                        <div class="node-number">1</div>
+                        <div class="node-name">Cron (09:00 NY)</div>
+                        <div class="node-type">触发器节点</div>
+                    </div>
+                    <div class="node-content">
+                        <h4>⚙️ 节点功能</h4>
+                        <p>Cron 是一个<strong>定时触发器</strong>，用于按照设定的时间表自动启动工作流。</p>
+
+                        <h4>🎯 参数设置解析</h4>
+                        <ul>
+                            <li><strong>时间：09:00</strong> - 选择早上9点是因为这是美国东部工作时间的开始，ProductHunt 的新产品通常在前一晚到早晨发布</li>
+                            <li><strong>时区：NY (纽约/美国东部)</strong> - ProductHunt 是美国公司，主要用户在美国，选择纽约时区与目标市场同步</li>
+                            <li><strong>频率：每天</strong> - 保证不错过任何一天的新产品</li>
+                        </ul>
+
+                        <div class="tip-box">
+                            <strong>💡 为什么要这样设置？</strong><br>
+                            选择纽约时间9点的原因：
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>ProductHunt 的"Product of the Day"在美国东部时间凌晨0点重置</li>
+                                <li>9点运行时，前一天的产品数据已经完整</li>
+                                <li>避开服务器高峰期，提高采集成功率</li>
+                            </ul>
+                        </div>
+
+                        <h4>📚 常见应用场景</h4>
+                        <ul>
+                            <li>每日报告生成（如：每天早上8点发送昨日销售报告）</li>
+                            <li>定期数据备份（如：每周日凌晨2点备份数据库）</li>
+                            <li>周期性数据同步（如：每小时同步库存数据）</li>
+                            <li>定时内容发布（如：每天中午12点发布社交媒体内容）</li>
+                            <li>定期清理任务（如：每月1日清理过期日志）</li>
+                        </ul>
+
+                        <h4>🔄 举一反三</h4>
+                        <p>如果你要做其他定时任务，可以考虑：</p>
+                        <ul>
+                            <li><strong>电商场景：</strong>每天凌晨1点同步订单数据到 Google Sheets</li>
+                            <li><strong>社交媒体：</strong>每周一早上10点发送上周数据分析报告</li>
+                            <li><strong>客户服务：</strong>每2小时检查一次未回复的工单</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 节点 2: ProductHunt RSS -->
+                <div class="node-card">
+                    <div class="node-header">
+                        <div class="node-number">2</div>
+                        <div class="node-name">ProductHunt RSS</div>
+                        <div class="node-type">数据获取节点</div>
+                    </div>
+                    <div class="node-content">
+                        <h4>⚙️ 节点功能</h4>
+                        <p>RSS Feed Reader 节点用于<strong>读取 RSS/Atom 订阅源</strong>，获取网站更新的内容。</p>
+
+                        <h4>🎯 参数设置解析</h4>
+                        <ul>
+                            <li><strong>RSS URL：</strong>ProductHunt 的 RSS 订阅地址（通常是 https://www.producthunt.com/feed）</li>
+                            <li><strong>获取数量：</strong>建议设置为获取最近24小时的产品（通常10-30条）</li>
+                            <li><strong>返回格式：</strong>默认返回 JSON 格式，包含标题、描述、链接、发布时间等字段</li>
+                        </ul>
+
+                        <div class="tip-box">
+                            <strong>💡 为什么使用 RSS 而不是 API？</strong><br>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>无需认证：</strong>RSS 是公开的，不需要申请 API Key</li>
+                                <li><strong>稳定性高：</strong>RSS 格式标准化，很少变动</li>
+                                <li><strong>足够简单：</strong>对于基本数据采集，RSS 已经满足需求</li>
+                                <li><strong>免费：</strong>没有 API 调用次数限制</li>
+                            </ul>
+                        </div>
+
+                        <h4>📊 RSS 返回的数据结构</h4>
+                        <div class="code-block">
+{
+  "title": "产品名称",
+  "description": "产品描述",
+  "link": "产品页面链接",
+  "pubDate": "发布时间",
+  "creator": "发布者",
+  "content": "完整内容",
+  "categories": ["分类1", "分类2"]
+}
+                        </div>
+
+                        <h4>📚 RSS 节点的常见应用</h4>
+                        <ul>
+                            <li><strong>内容聚合：</strong>订阅多个博客/新闻源，汇总到一个地方</li>
+                            <li><strong>竞品监控：</strong>监控竞争对手的博客、产品发布</li>
+                            <li><strong>内容自动化：</strong>抓取内容后自动发布到自己的平台</li>
+                            <li><strong>行业动态：</strong>追踪特定行业的最新资讯</li>
+                        </ul>
+
+                        <h4>🔄 举一反三</h4>
+                        <ul>
+                            <li><strong>博客监控：</strong>订阅竞争对手博客 RSS → 提取关键词 → 发送通知</li>
+                            <li><strong>新闻聚合：</strong>订阅多个科技媒体 → 过滤关键词 → 生成日报</li>
+                            <li><strong>招聘信息：</strong>订阅招聘网站 RSS → 筛选职位 → 推送到 Slack</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 节点 3: Code -->
+                <div class="node-card">
+                    <div class="node-header">
+                        <div class="node-number">3</div>
+                        <div class="node-name">Code</div>
+                        <div class="node-type">数据处理节点</div>
+                    </div>
+                    <div class="node-content">
+                        <h4>⚙️ 节点功能</h4>
+                        <p>Code 节点允许你<strong>编写 JavaScript 代码</strong>来处理数据，是 N8N 中最灵活、最强大的节点之一。</p>
+
+                        <h4>🎯 在这个工作流中的作用</h4>
+                        <p>Code 节点可能在做以下处理：</p>
+                        <ul>
+                            <li><strong>数据清洗：</strong>去除 HTML 标签、清理特殊字符</li>
+                            <li><strong>字段提取：</strong>从复杂的 RSS 数据中提取需要的字段</li>
+                            <li><strong>数据转换：</strong>格式化日期、处理链接、提取分类</li>
+                            <li><strong>数据过滤：</strong>只保留特定类型的产品（如：AI工具）</li>
+                            <li><strong>数据增强：</strong>添加额外字段，如采集时间戳</li>
+                        </ul>
+
+                        <h4>💻 典型代码示例</h4>
+                        <div class="code-block">
+// 遍历所有输入项
+for (const item of $input.all()) {
+  // 提取并清洗数据
+  const cleanTitle = item.json.title.replace(/<[^>]*>/g, '');
+  const cleanDescription = item.json.description.replace(/<[^>]*>/g, '').substring(0, 200);
+  
+  // 格式化日期
+  const publishDate = new Date(item.json.pubDate).toISOString().split('T')[0];
+  
+  // 提取分类
+  const categories = item.json.categories ? item.json.categories.join(', ') : 'N/A';
+  
+  // 返回清洗后的数据
+  item.json = {
+    产品名称: cleanTitle,
+    产品描述: cleanDescription,
+    链接: item.json.link,
+    发布日期: publishDate,
+    分类: categories,
+    采集时间: new Date().toISOString()
+  };
+}
+
+return $input.all();
+                        </div>
+
+                        <div class="tip-box">
+                            <strong>💡 为什么需要 Code 节点？</strong><br>
+                            虽然 N8N 有很多内置节点，但有些特殊处理逻辑需要自定义代码：
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>复杂的数据转换逻辑</li>
+                                <li>特殊的字符串处理</li>
+                                <li>条件判断和数据合并</li>
+                                <li>调用第三方库处理数据</li>
+                            </ul>
+                        </div>
+
+                        <h4>📚 Code 节点的常见应用</h4>
+                        <ul>
+                            <li><strong>数据清洗：</strong>去除无用字符、统一格式</li>
+                            <li><strong>数据转换：</strong>JSON 转换、日期格式化、单位转换</li>
+                            <li><strong>条件逻辑：</strong>复杂的 if-else 判断</li>
+                            <li><strong>数据聚合：</strong>合并多个数据源、计算统计值</li>
+                            <li><strong>API 交互：</strong>构建复杂的 API 请求体</li>
+                        </ul>
+
+                        <h4>🔄 举一反三</h4>
+                        <ul>
+                            <li><strong>价格监控：</strong>Code 节点比较新旧价格 → 计算折扣率 → 筛选优惠</li>
+                            <li><strong>文本分析：</strong>Code 节点提取关键词 → 情感分析 → 分类标记</li>
+                            <li><strong>数据合并：</strong>Code 节点合并客户信息 + 订单数据 → 生成客户画像</li>
+                        </ul>
+
+                        <div class="warning-box">
+                            <strong>⚠️ 注意事项</strong><br>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>Code 节点中使用 <span class="highlight">$input.all()</span> 获取所有输入数据</li>
+                                <li>必须 <span class="highlight">return</span> 处理后的数据</li>
+                                <li>可以使用大部分 JavaScript ES6+ 语法</li>
+                                <li>注意处理空值和异常情况</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 节点 4: Convert to File -->
+                <div class="node-card">
+                    <div class="node-header">
+                        <div class="node-number">4</div>
+                        <div class="node-name">Convert to File (CSV)</div>
+                        <div class="node-type">格式转换节点</div>
+                    </div>
+                    <div class="node-content">
+                        <h4>⚙️ 节点功能</h4>
+                        <p>Convert to File 节点将<strong>JSON 数据转换为文件格式</strong>（CSV、Excel、PDF 等），便于存储和分析。</p>
+
+                        <h4>🎯 参数设置解析</h4>
+                        <ul>
+                            <li><strong>输出格式：CSV</strong> - 选择 CSV 因为它通用、轻量、易于导入 Excel/数据库</li>
+                            <li><strong>文件名：</strong>建议使用动态命名，如 <code>producthunt_{{ $now.format('YYYY-MM-DD') }}.csv</code></li>
+                            <li><strong>包含表头：</strong>通常设置为 Yes，方便后续查看和处理</li>
+                            <li><strong>分隔符：</strong>默认逗号，可根据需求改为制表符或分号</li>
+                        </ul>
+
+                        <div class="tip-box">
+                            <strong>💡 为什么选择 CSV 格式？</strong><br>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>通用性强：</strong>几乎所有软件都支持 CSV（Excel、Google Sheets、数据库）</li>
+                                <li><strong>文件小：</strong>纯文本格式，占用空间少</li>
+                                <li><strong>易于处理：</strong>可以用文本编辑器打开，方便调试</li>
+                                <li><strong>导入方便：</strong>数据分析工具（Python、R）都支持 CSV</li>
+                            </ul>
+                        </div>
+
+                        <h4>📁 文件命名最佳实践</h4>
+                        <div class="code-block">
+// 推荐的动态文件命名
+producthunt_2025-10-26.csv           // 按日期
+producthunt_2025-10.csv              // 按月份
+producthunt_data.csv                 // 单一文件（追加模式）
+producthunt_{{ $now.toUnixInteger() }}.csv  // 使用时间戳
+                        </div>
+
+                        <h4>📚 Convert to File 的常见应用</h4>
+                        <ul>
+                            <li><strong>数据导出：</strong>从 API 获取数据 → 转为 Excel → 发送给团队</li>
+                            <li><strong>报告生成：</strong>汇总数据 → 转为 PDF 报告 → 邮件发送</li>
+                            <li><strong>数据备份：</strong>数据库数据 → 转为 CSV → 存储到云盘</li>
+                            <li><strong>数据交换：</strong>系统 A 的数据 → 转为 JSON → 导入系统 B</li>
+                        </ul>
+
+                        <h4>🔄 举一反三</h4>
+                        <ul>
+                            <li><strong>销售报表：</strong>订单数据 → 转为 Excel → 添加图表 → 发送给管理层</li>
+                            <li><strong>客户导出：</strong>CRM 数据 → 转为 CSV → 导入邮件营销工具</li>
+                            <li><strong>日志归档：</strong>应用日志 → 转为文本文件 → 按日期存储</li>
+                        </ul>
+
+                        <div class="warning-box">
+                            <strong>⚠️ CSV 格式注意事项</strong><br>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>如果数据中包含逗号，字段会自动加引号</li>
+                                <li>中文字符建议使用 UTF-8 编码</li>
+                                <li>日期格式要统一，建议使用 ISO 格式（YYYY-MM-DD）</li>
+                                <li>大数据量时考虑分批处理，避免单个文件过大</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 节点 5: Read/Write Files -->
+                <div class="node-card">
+                    <div class="node-header">
+                        <div class="node-number">5</div>
+                        <div class="node-name">Read/Write Files from Disk</div>
+                        <div class="node-type">文件操作节点</div>
+                    </div>
+                    <div class="node-content">
+                        <h4>⚙️ 节点功能</h4>
+                        <p>Read/Write Files 节点用于<strong>在服务器本地磁盘上读写文件</strong>，实现数据的持久化存储。</p>
+
+                        <h4>🎯 参数设置解析</h4>
+                        <ul>
+                            <li><strong>操作：Write File to Disk</strong> - 将数据写入磁盘</li>
+                            <li><strong>文件路径：</strong>建议使用绝对路径，如 <code>/data/producthunt/</code></li>
+                            <li><strong>文件名：</strong>从上一个节点获取（已包含日期）</li>
+                            <li><strong>写入模式：</strong>
+                                <ul style="margin-left: 20px;">
+                                    <li><strong>Overwrite：</strong>覆盖现有文件（每天生成新文件）</li>
+                                    <li><strong>Append：</strong>追加到文件末尾（累积所有数据）</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <div class="tip-box">
+                            <strong>💡 文件存储策略建议</strong><br>
+                            根据不同需求选择存储方式：
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>每日一个文件：</strong>便于按日期查找，文件管理清晰</li>
+                                <li><strong>单一大文件：</strong>便于做长期趋势分析，但文件会越来越大</li>
+                                <li><strong>按月归档：</strong>平衡文件大小和管理便利性</li>
+                            </ul>
+                        </div>
+
+                        <h4>📂 推荐的目录结构</h4>
+                        <div class="code-block">
+/data/
+  └── producthunt/
+      ├── 2025-10/
+      │   ├── producthunt_2025-10-01.csv
+      │   ├── producthunt_2025-10-02.csv
+      │   └── producthunt_2025-10-26.csv
+      ├── 2025-11/
+      └── archive/
+          └── producthunt_2024.csv
+                        </div>
+
+                        <h4>📚 文件操作节点的常见应用</h4>
+                        <ul>
+                            <li><strong>数据归档：</strong>定期保存重要数据到本地备份</li>
+                            <li><strong>日志记录：</strong>将工作流运行日志写入文件</li>
+                            <li><strong>缓存数据：</strong>暂存中间处理结果</li>
+                            <li><strong>配置管理：</strong>读取配置文件驱动工作流</li>
+                            <li><strong>报告生成：</strong>保存生成的报告文件</li>
+                        </ul>
+
+                        <h4>🔄 举一反三</h4>
+                        <ul>
+                            <li><strong>发票备份：</strong>从邮件提取发票 → 保存到本地 → 按月归档</li>
+                            <li><strong>图片下载：</strong>抓取网页图片 → 保存到磁盘 → 按分类存储</li>
+                            <li><strong>配置驱动：</strong>读取 JSON 配置 → 动态调整工作流行为</li>
+                        </ul>
+
+                        <div class="warning-box">
+                            <strong>⚠️ 文件操作注意事项</strong><br>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>权限问题：</strong>确保 N8N 有目录写入权限</li>
+                                <li><strong>磁盘空间：</strong>定期清理旧文件，避免磁盘满</li>
+                                <li><strong>路径安全：</strong>避免使用用户输入直接构建路径（防止目录遍历攻击）</li>
+                                <li><strong>并发写入：</strong>多个工作流同时写入同一文件可能导致数据损坏</li>
+                                <li><strong>云端考虑：</strong>如果在云环境运行，考虑使用对象存储（S3、Google Cloud Storage）</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工作流优化建议 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🚀</span>
+                    工作流优化建议
+                </h2>
+
+                <div class="node-card">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">💡 可以添加的功能</h3>
+                    
+                    <h4>1. 错误处理</h4>
+                    <ul>
+                        <li>添加 <strong>Error Trigger</strong> 节点捕获失败情况</li>
+                        <li>失败时发送通知到 Slack 或邮件</li>
+                        <li>记录错误日志到文件</li>
+                    </ul>
+
+                    <h4>2. 数据去重</h4>
+                    <ul>
+                        <li>在 Code 节点中添加去重逻辑</li>
+                        <li>读取昨天的文件，对比已有产品</li>
+                        <li>只保存新增的产品</li>
+                    </ul>
+
+                    <h4>3. 数据增强</h4>
+                    <ul>
+                        <li>调用 ProductHunt API 获取更多信息（点赞数、评论数）</li>
+                        <li>使用 AI 节点分析产品描述，提取关键词</li>
+                        <li>添加产品分类标签</li>
+                    </ul>
+
+                    <h4>4. 通知功能</h4>
+                    <ul>
+                        <li>筛选出高热度产品（>100 赞）</li>
+                        <li>发送到 Slack/Email/微信</li>
+                        <li>生成每日摘要报告</li>
+                    </ul>
+
+                    <h4>5. 数据可视化</h4>
+                    <ul>
+                        <li>将数据同步到 Google Sheets</li>
+                        <li>使用 Google Data Studio 制作仪表板</li>
+                        <li>追踪产品趋势和分类统计</li>
+                    </ul>
+                </div>
+
+                <div class="node-card">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">⚡ 性能优化</h3>
+                    <ul>
+                        <li><strong>限流控制：</strong>如果数据量大，添加延迟避免被封 IP</li>
+                        <li><strong>分批处理：</strong>使用 Split In Batches 节点处理大量数据</li>
+                        <li><strong>缓存机制：</strong>使用 Redis 缓存已处理的产品 ID</li>
+                        <li><strong>压缩存储：</strong>定期将 CSV 压缩为 ZIP 节省空间</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 扩展应用 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🌟</span>
+                    这个工作流可以扩展到
+                </h2>
+
+                <div class="use-cases">
+                    <div class="use-case-item">
+                        <div class="emoji">📰</div>
+                        <div><strong>新闻监控</strong><br>订阅科技媒体RSS → 关键词筛选 → 生成日报</div>
+                    </div>
+                    <div class="use-case-item">
+                        <div class="emoji">🛒</div>
+                        <div><strong>价格追踪</strong><br>抓取电商价格 → 对比历史 → 降价提醒</div>
+                    </div>
+                    <div class="use-case-item">
+                        <div class="emoji">💼</div>
+                        <div><strong>招聘信息</strong><br>抓取招聘网站 → 筛选职位 → 推送通知</div>
+                    </div>
+                    <div class="use-case-item">
+                        <div class="emoji">📱</div>
+                        <div><strong>社交媒体</strong><br>监控话题标签 → 分析热点 → 生成报告</div>
+                    </div>
+                    <div class="use-case-item">
+                        <div class="emoji">🏢</div>
+                        <div><strong>竞品分析</strong><br>追踪竞品动态 → 功能对比 → 策略建议</div>
+                    </div>
+                    <div class="use-case-item">
+                        <div class="emoji">📊</div>
+                        <div><strong>股票监控</strong><br>获取财经新闻 → 情感分析 → 投资参考</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习总结 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">📝</span>
+                    学习总结
+                </h2>
+
+                <div class="card">
+                    <div class="card-title">核心知识点</div>
+                    <ol style="margin-left: 20px;">
+                        <li><strong>定时触发：</strong>使用 Cron 节点实现定时任务，注意时区选择</li>
+                        <li><strong>数据采集：</strong>RSS 是获取公开数据的简单有效方式</li>
+                        <li><strong>数据处理：</strong>Code 节点提供最大灵活性，用于复杂逻辑</li>
+                        <li><strong>格式转换：</strong>将数据转为通用格式（CSV）便于后续使用</li>
+                        <li><strong>数据存储：</strong>本地文件存储适合数据归档和备份</li>
+                    </ol>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">工作流设计思维</div>
+                    <ul style="margin-left: 20px;">
+                        <li>🎯 <strong>明确目标：</strong>先确定要解决什么问题</li>
+                        <li>📥 <strong>数据输入：</strong>数据从哪里来？（API、RSS、数据库、文件）</li>
+                        <li>⚙️ <strong>数据处理：</strong>需要什么转换？（清洗、筛选、聚合、计算）</li>
+                        <li>📤 <strong>数据输出：</strong>数据去哪里？（存储、发送、展示）</li>
+                        <li>🔄 <strong>循环迭代：</strong>不断优化和完善工作流</li>
+                    </ul>
+                </div>
+
+                <div class="tip-box">
+                    <strong>🎓 下一步学习建议</strong><br>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>尝试修改这个工作流，添加通知功能</li>
+                        <li>学习如何将数据同步到 Google Sheets</li>
+                        <li>研究如何使用 AI 节点分析产品描述</li>
+                        <li>构建一个完整的数据可视化仪表板</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📚 N8N 案例解析教学 | 案例 #001</p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/yourusername/n8n-case-study" target="_blank">查看 GitHub 仓库</a> |
+                <a href="https://n8n.io" target="_blank">N8N 官方文档</a>
+            </p>
+            <p style="margin-top: 15px; font-size: 0.9em; color: #999;">
+                创建日期: 2025-10-26 | 持续学习，不断进步 💪
+            </p>
+        </div>
+    </div>
+</body>
+</html>
